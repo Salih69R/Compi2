@@ -35,6 +35,38 @@ public:
 };
 
 
+/*
+
+union t {
+base_type_info expType;
+base_type_info opType;
+base_type_info BType;
+base_type_info CommentType;
+base_type_info ProgramType;
+base_type_info EnumType;
+//..
+};
+
+
+
+
+class CType{
+public:
+//enum = what type are you
+t ctype;
+
+
+
+};
+
+
+
+CType x;
+//if enum is exp
+base_type_info tmpexp = x.ctype.expType;
+
+*/
+
 
 
 
