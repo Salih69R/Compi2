@@ -136,7 +136,7 @@ continue 										{
 ["](([^\n\r\"\\]|\\[rnt"\\])+)["]				{
 													yylval = new STRING_T();
 										
-													(STRING_T*)yylval->value=yytext;
+													((STRING_T*) yylval)->value=yytext;
 													return STRING_T;
 												}
 "//"[^\r\n]*[ \r|\n|\r\n]?						;				;
