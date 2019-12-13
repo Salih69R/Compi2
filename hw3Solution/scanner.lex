@@ -137,7 +137,7 @@ continue 										{
 													yylval = new STRING_T();
 										
 													((STRING_T*) yylval)->value=yytext;
-													return STRING_T;
+													return STRING;
 												}
 "//"[^\r\n]*[ \r|\n|\r\n]?						;				;
 {whitespace}									;
