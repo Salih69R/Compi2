@@ -116,16 +116,16 @@ public:
 
 
 
-//class EXP_T : public Node{};
-// class ENUMTYPE_T : public Node{};
-// class TYPE_T : public Node{};
-// class EXPLIST_T : public Node{};
-// class CALL_T : public Node{};
-// class STATEMENT_T : public Node{};
-
-
-
-
+class EXP_T : public Node{};
+class ENUMTYPE_T : public Node{};
+class TYPE_T : public Node{};
+class EXPLIST_T : public Node{};
+class CALL_T : public Node{};
+class STATEMENT_T : public Node{};
+class STATEMENTS_T : public Node{};
+class ENUMERATOR_T : public Node{};
+class ENUMERATORLIST_T : public Node{};
+class FORMALDECL_T : public Node{};
 
 
 
