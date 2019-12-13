@@ -155,34 +155,65 @@ Exp :			LPAREN Exp RPAREN
 						 }
 				| Exp ADDOPS Exp 													
 						
-						{
-							
-
-
-						}
+						{}
 				| Exp MULTOPS Exp 													
 						{}
 
 				| ID 																
-						{}
+						{	
+							$$ = new EXP_T();
+							$$->value = $1->value;
+							$$->type = $1->type;
+							delete $1;
+						}
 
 				| Call 																
-						{}
+						{
+							$$ = new EXP_T();
+							$$->value = $1->value;
+							$$->type = $1->type;
+							delete $1;
+						}
 
 				| NUM 																
-						{}
+						{
+							$$ = new EXP_T();
+							$$->value = $1->value;
+							$$->type = $1->type;
+							delete $1;
+						}
 
 				| NUM B 															
-						{}
+						{
+							$$ = new EXP_T();
+							$$->value = $1->value;
+							$$->type = $1->type;
+							delete $1;
+						}
 
 				| STRING 															
-						{}
+						{
+							$$ = new EXP_T();
+							$$->value = $1->value;
+							$$->type = $1->type;
+							delete $1;
+						}
 
 				| TRUE 																
-						{}
+						{
+							$$ = new EXP_T();
+							$$->value = $1->value;
+							$$->type = BOOL_t;
+							delete $1;
+						}
 
 				| FALSE 															
-						{}
+						{
+							$$ = new EXP_T();
+							$$->value = $1->val;
+							$$->type = BOOL_t;
+							delete $1;
+						}
 						
 				| NOT Exp 															
 						{}
