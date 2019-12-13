@@ -1,10 +1,15 @@
 %{ 
 /* Declarations section */
-	#include "output.hpp"
+
+	#include "hw3_output.hpp"
 	#include "parser.tab.hpp"
 	#include<iostream>
     using namespace std;
 	using namespace output;
+	
+
+	
+	
 %} 
 
 %option yylineno 
@@ -14,37 +19,126 @@ whitespace										([\t\n\r ])
 
 %%
 
-void											return VOID;
-int												return INT;
-byte											return BYTE;
-b												return B;
-bool											return BOOL;
-enum											return ENUM;
-and 											return AND;
-or												return OR;
-not												return NOT;
-true											return TRUE;
-false 											return FALSE;
-return											return RETURN;
-if												return IF;
-else											return ELSE;
-while											return WHILE;
-break											return BREAK;
-continue 										return CONTINUE;
-\;												return SC;
-\,												return COMMA;
-\(												return LPAREN;
-\)												return RPAREN;
-\{												return LBRACE;
-\}												return RBRACE;
-\=												return ASSIGN;
-"<="|">="|"<"|">"								return RELATIONOP;	
-"=="|"!="										return EQUALOP;
-\+|\-											return ADDOPS;
-\*|\/											return MULTOPS;
+void											{
+													yylval = new VOID_T();
+													return VOID;
+												}
+int												{
+													yylval = new INT_T();
+													return INT;
+												}
+byte											{
+													yylval = new BYTE_T();
+													return BYTE;
+												}
+b												{
+													yylval = new B_T();
+													return B;
+												}
+bool											{
+													yylval = new BOOL_T();
+													return BOOL;
+												}
+enum											{
+													yylval = new ENUM_T();
+													return ENUM;
+												}
+and 											{
+													yylval = new AND_T();
+													return AND;
+												}
+or												{
+													yylval = new OR_T();
+													return OR;
+												}
+not												{
+													yylval = new NOT_T();
+													return NOT;
+												}
+true											{
+													yylval = new TRUE_T();
+													return TRUE;
+												}
+false 											{
+													yylval = new FALSE_T();
+													return FALSE;
+												}
+return											{
+													yylval = new RETURN_T();
+													return RETURN;
+												}
+if												{
+													yylval = new IF_T();
+													return IF;
+												}
+else											{
+													yylval = new ELSE_T();
+													return ELSE;
+												}
+while											{
+													yylval = new WHILE_T();
+													return WHILE;
+												}
+break											{
+													yylval = new BREAK_T();
+													return BREAK;
+												}
+continue 										{
+													yylval = new CONTINUE_T();
+													return CONTINUE;
+												}
+\;												{
+													yylval = new SC_T();
+													return SC;
+												}
+\,												{
+													yylval = new COMMA_T();
+													return COMMA;
+												}
+\(												{
+													yylval = new LPAREN_T();
+													return LPAREN;
+												}
+\)												{
+													yylval = new RPAREN_T();
+													return RPAREN;
+												}
+\{												{
+													yylval = new LBRACE_T();
+													return LBRACE;
+												}
+\}												{
+													yylval = new RBRACE_T();
+													return RBRACE;
+												}
+\=												{
+													yylval = new ASSIGN_T();
+													return ASSIGN;
+												}
+"<="|">="|"<"|">"								{
+													yylval = new RELATIONOP_T();
+													return RELATIONOP;
+												}	
+"=="|"!="										{
+													yylval = new EQUALOP_T();
+													return EQUALOP;
+												}
+\+|\-											{
+													yylval = new ADDOPS_T();
+													return ADDOPS;
+												}
+\*|\/											{
+													yylval = new MULTOPS_T();
+													return MULTOPS;
+												}
 [a-zA-Z][a-zA-Z0-9]*							return ID;
 0|[1-9][0-9]*									return NUM;
-["](([^\n\r\"\\]|\\[rnt"\\])+)["]				return STRING;
+["](([^\n\r\"\\]|\\[rnt"\\])+)["]				{
+													yylval = new STRING_T();
+										
+													(STRING_T*)yylval->value=yytext;
+													return STRING_T;
+												}
 "//"[^\r\n]*[ \r|\n|\r\n]?						;				;
 {whitespace}									;
 .												{ errorLex(yylineno); exit(0);}
