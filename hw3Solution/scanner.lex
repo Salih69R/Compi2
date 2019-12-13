@@ -132,8 +132,16 @@ continue 										{
 													yylval = new MULTOPS_T();
 													return MULTOPS;
 												}
-[a-zA-Z][a-zA-Z0-9]*							return ID;
-0|[1-9][0-9]*									return NUM;
+[a-zA-Z][a-zA-Z0-9]*							{ 
+													yylval = new ID_T(); 
+													((ID_T*) yylval)->id=yytext; 
+													return ID; 
+												} 
+0|[1-9][0-9]*									{ 
+													yylval = new NUM_T(); 
+													((NUM_T*) yylval)->value=stoi(yytext); 
+													return NUM; 
+												} 
 ["](([^\n\r\"\\]|\\[rnt"\\])+)["]				{
 													yylval = new STRING_T();
 										
