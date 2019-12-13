@@ -2,6 +2,7 @@
 /* Declarations section */
 
 	#include "hw3_output.hpp"
+	#include "structs.hpp"
 	#include "parser.tab.hpp"
 	#include<iostream>
     using namespace std;
