@@ -143,7 +143,7 @@ continue 										{
 												} 
 0|[1-9][0-9]*									{ 
 													yylval = new NUM_T(); 
-													((NUM_T*) yylval)->value=stoi(yytext); 
+													((NUM_T*) yylval)->value= yytext; 
 													return NUM; 
 												} 
 ["](([^\n\r\"\\]|\\[rnt"\\])+)["]				{

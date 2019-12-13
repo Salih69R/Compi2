@@ -82,15 +82,8 @@ class ENUM_T : public Node{
 
     //TODO MIGHT ADD STUFF HER E
 };
-class TRUE_T : public Node{
-public:
-    bool val = true;
-
-};
-class FALSE_T : public Node{
-public:
-    bool val = false;
-};
+class TRUE_T : public Node{};
+class FALSE_T : public Node{};
 class RETURN_T : public Node{};
 class ELSE_T : public Node{};
 class WHILE_T : public Node{};
@@ -106,17 +99,14 @@ public:
     int offset;
     VariableType type;
     string value;
-
 };
 class NUM_T : public Node{
 public:
-    int value;
-
+    string value;
 };
 class STRING_T : public Node{
 public:
     string value;
-
 };
 
 
