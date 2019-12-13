@@ -110,6 +110,33 @@ public:
 
 };
 
+
+
+//Grammar variables
+
+
+
+//class EXP_T : public Node{};
+// class ENUMTYPE_T : public Node{};
+// class TYPE_T : public Node{};
+// class EXPLIST_T : public Node{};
+// class CALL_T : public Node{};
+// class STATEMENT_T : public Node{};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /******************************************************************************/
 
 

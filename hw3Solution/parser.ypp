@@ -85,12 +85,12 @@ EnumeratorList :	Enumerator
 Enumerator :		ID 															
 						{};
 
-Statements :	Statment 													
+Statements :	Statement 													
 						{}
-				| Statements Statment 												
+				| Statements Statement 												
 						{};
 
-Statment :		LBRACE Statements RBRACE 									
+Statement :		LBRACE Statements RBRACE 									
 						{}
 				| Type ID SC 														
 
@@ -113,12 +113,12 @@ Statment :		LBRACE Statements RBRACE
 						{}
 				| RETURN Exp SC 													
 						{}
-				| IF LPAREN Exp RPAREN Statment 									
+				| IF LPAREN Exp RPAREN Statement 									
 						{}
-				| IF LPAREN Exp RPAREN Statment ELSE Statment 						
+				| IF LPAREN Exp RPAREN Statement ELSE Statement 						
 		
 						{}
-				| WHILE LPAREN Exp RPAREN Statment 									
+				| WHILE LPAREN Exp RPAREN Statement 									
 						{}
 				| BREAK SC 															
 						{}
