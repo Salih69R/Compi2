@@ -126,12 +126,14 @@ class STATEMENTS_T : public Node{};
 class ENUMERATOR_T : public Node{};
 class ENUMERATORLIST_T : public Node{};
 class FORMALDECL_T : public Node{};
-
-
-
-
-
-
+class FORMALSLIST_T : public Node{};
+class FORMALS_T : public Node{};
+class RETTYPE_T : public Node{};
+class ENUMDECL_T : public Node{};
+class ENUMS_T : public Node{};
+class FUNCDEL_T : public Node{};
+class FUNCS_T : public Node{};
+class PROGRAM_T : public Node{};
 
 
 
