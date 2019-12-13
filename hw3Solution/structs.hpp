@@ -45,14 +45,23 @@ class VOID_T : public Node{
 public:
     VariableType type = VOID_t;
 };
-class ASSIGN_T : public Node{};
+class ASSIGN_T : public Node{
+};
 class OR_T : public Node{};
 class AND_T : public Node{};
-class EQUALOP_T : public Node{};
-class RELATIONOP_T: public Node{};
-class ADDOPS_T : public Node{};
+class EQUALOP_T : public Node{
+    string op;
+};
+class RELATIONOP_T: public Node{
+    string op;
+};
+class ADDOPS_T : public Node{
+    string op;
+};
 class IF_T : public Node{};
-class MULTOPS_T : public Node{};
+class MULTOPS_T : public Node{
+    string op;
+};
 class LPAREN_T : public Node{};
 class RPAREN_T : public Node{};
 class NOT_T : public Node{};

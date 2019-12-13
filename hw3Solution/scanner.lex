@@ -118,18 +118,22 @@ continue 										{
 												}
 "<="|">="|"<"|">"								{
 													yylval = new RELATIONOP_T();
+													((RELATIONOP_T*) yylval)->op=yytext; 
 													return RELATIONOP;
 												}	
 "=="|"!="										{
 													yylval = new EQUALOP_T();
+													((EQUALOP_T*) yylval)->op=yytext; 
 													return EQUALOP;
 												}
 \+|\-											{
 													yylval = new ADDOPS_T();
+													((ADDOPS_T*) yylval)->op=yytext; 
 													return ADDOPS;
 												}
 \*|\/											{
 													yylval = new MULTOPS_T();
+													((MULTOPS_T*) yylval)->op=yytext; 
 													return MULTOPS;
 												}
 [a-zA-Z][a-zA-Z0-9]*							{ 
