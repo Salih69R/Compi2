@@ -148,10 +148,18 @@ EnumType :		ENUM ID
 
 Exp :			LPAREN Exp RPAREN 											
 						
-						{}
+						{ 
+							$$ = $2;
+							delete $1;
+							delete $3;
+						 }
 				| Exp ADDOPS Exp 													
 						
-						{}
+						{
+							
+
+
+						}
 				| Exp MULTOPS Exp 													
 						{}
 

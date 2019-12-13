@@ -116,7 +116,10 @@ public:
 
 
 
-class EXP_T : public Node{};
+class EXP_T : public Node{
+    VariableType type;
+    string value;
+};
 class ENUMTYPE_T : public Node{};
 class TYPE_T : public Node{};
 class EXPLIST_T : public Node{};
