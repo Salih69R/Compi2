@@ -125,6 +125,16 @@ public:
     stack<int> offset_stack;
     stack<Scope> scopes_table;
 
+    Variable* GetVar(string name){
+
+        stack<Scope> cpy_stack = stack<Scope>();
+        Scope cpy_scope;
+        Variable* found = nullptr;
+
+        while(!scopes_table.empty()){
+
+        }
+    }
 };
 
 
