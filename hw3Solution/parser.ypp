@@ -148,226 +148,52 @@ EnumType :		ENUM ID
 
 Exp :			LPAREN Exp RPAREN 											
 						
-						{ 
-							$$ = $2;
-							delete $1;
-							delete $3;
-						 }
+						{}
 				| Exp ADDOPS Exp 													
 						
-						{
-							if($1->type != INT_t || $2->type != INT_t){
-								//TODO: implement error
-							}
-							$$ = new EXP_T();
-							$$->type = INT_t;
-							if($2->op == "+")
-							{
-								$$->value = std::to_string( stoi($1->value) + stoi($3->value) );
-							}
-							//else $2->op is "-"
-
-							$$->value = std::to_string( stoi($1->value) - stoi($3->value) );
-							delete $1;
-							delete $2;
-							delete $3;
-						}
+						{}
 				| Exp MULTOPS Exp 													
-						{
-							if($1->type != INT_t || $2->type != INT_t){
-								//TODO: implement error
-							}
-							$$ = new EXP_T();
-							$$->type = INT_t;
-							if($2->op == "*")
-							{
-								$$->value = std::to_string( stoi($1->value) * stoi($3->value) );
-							}
-							//else $2->op is "/"
-
-							$$->value = std::to_string( stoi($1->value) / stoi($3->value) );
-							delete $1;
-							delete $2;
-							delete $3;
-						}
+						{}
 
 				| ID 																
-						{	
-							$$ = new EXP_T();
-							$$->value = $1->value;
-							$$->type = $1->type;
-							delete $1;
-						}
+						{}
 
 				| Call 																
-						{
-							$$ = new EXP_T();
-							$$->value = $1->value;
-							$$->type = $1->type;
-							delete $1;
-						}
+						{}
 
 				| NUM 																
-						{
-							$$ = new EXP_T();
-							$$->value = $1->value;
-							$$->type = INT_t;
-							delete $1;
-						}
+						{}
 
-				| NUM B //what??															
+				| NUM B 														
 						{}
 
 				| STRING 															
-						{
-							$$ = new EXP_T();
-							$$->value = $1->value;
-							$$->type = STRING_t;
-							delete $1;
-						}
+						{}
 
 				| TRUE 																
-						{
-							$$ = new EXP_T();
-							$$->value = "true";
-							$$->type = BOOL_t;
-							delete $1;
-						}
+						{}
 
 				| FALSE 															
-						{
-							$$ = new EXP_T();
-							$$->value = "false";
-							$$->type = BOOL_t;
-							delete $1;
-						}
+						{}
 						
 				| NOT Exp 															
-						{
-							if($2->type != BOOL_t){
-								//TODO: implement error
-							}
-							$$ = $2;
-							if($$->value == "true")
-								$$->value = "false";
-							else
-								$$->value = "true";
-
-								delete $1;
-
-						}
+						{}
 
 
 				| Exp AND Exp 														
-						{
-							if($1->type != BOOL_t || $3->type!=BOOL_t){
-								//TODO: implement error
-							}
-							$$ = new EXP_T();
-							$$->type = BOOL_t;
-							if($1->value == "true" && $3->value=="true")
-								$$->value = "true";
-							else
-								$$->value = "false";
-
-							delete $1;
-							delete $2;
-							delete $3;
-						}
+						{}
 
 				| Exp OR Exp 														
-						{
-							if($1->type != BOOL_t || $3->type!=BOOL_t){
-								//TODO: implement error
-							}
-							$$ = new EXP_T();
-							$$->type = BOOL_t;
-
-							if($1->value == "true" || $3->value=="true")
-								$$->value = "true";
-							else
-								$$->value = "false";
-
-							delete $1;
-							delete $2;
-							delete $3;
-						}
+						{}
 
 				| Exp RELATIONOP Exp 												
-						{
-							if($1->type !=  $3->type){
-								//TODO: implement error
-							}
-							$$ = new EXP_T();
-							$$->type = BOOL_t;
-					
-							if($2->op == "<=")
-							{
-								if(stoi($1->value) <= (stoi($3->value))  )
-									$$->value = "true";
-								else 
-									$$->value = "false";
-							}
-							if($2->op == "<")
-							{
-								if(stoi($1->value) < (stoi($3->value))  )
-									$$->value = "true";
-								else 
-									$$->value = "false";
-							}
-							if($2->op == ">=")
-							{
-								if(stoi($1->value) >= (stoi($3->value))  )
-									$$->value = "true";
-								else 
-									$$->value = "false";
-							}
-							if($2->op == ">")
-							{
-								if(stoi($1->value) > (stoi($3->value))  )
-									$$->value = "true";
-								else 
-									$$->value = "false";
-							}
-							delete $1;
-							delete $2;
-							delete $3;
-						}
+						{}
 
 				| Exp EQUALOP Exp 													
-						{
-							if($1->type != $3->type)
-							{
-								//TODO: implement error
-								//TODO: check if type is VOID_t and check if it needs to be an error
-							}
-							$$ = new EXP_T();
-							$$->type = BOOL_t;
-							if($2->op == "==")
-							{
-								if($1->value == $3->value)
-									$$->value = "true";
-								else
-									$$->value = "false";
-							}
-
-							//2->op is !=
-
-							if($1->value != $3->value)
-								$$->value = "true";
-							else
-								$$->value = "false";
-
-							delete $1;
-							delete $2;
-							delete $3;
-						}
+						{}
 
 				| LPAREN Type RPAREN Exp 											
-						{
-							//TODO: implement after understanding this better
-
-						};
+						{};
 
 
 %%

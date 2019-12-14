@@ -18,14 +18,20 @@ using std::string;
 
 
 /******************************************************************************/
-typedef enum Varable_t{
-    INT_t , VOID_t , BOOL_t , BYTE_t, STRING_t
-} VariableType;
-
 
 typedef enum ScopeType_t{
     NORMAL , LOOP , GLOBAL , FUNCTION
 } ScopeType;
+
+typedef enum tokentype { VOID_t , INT_t ,
+     BYTE_t, B_t, BOOL_t,
+     AND_t ,OR_t , NOT_t 
+     , TRUE_t , FALSE_t , RETURN_t ,
+     IF_t , ELSE_t , WHILE_t , BREAK_t ,
+     CONTINUE_t , SC_t ,COMMA_t ,
+     LPAREN_t , RPAREN_t, LBRACE_t,
+     RBRACE_t , ASSIGN_t , COMMENT_t, ID_t, NUM_t, STRING_t ,ADDOPS_t, MULTOPS_t ,EQUALOP_t, RELATIONOP_t } TokenType;
+     
 /******************************************************************************/
 
 
@@ -34,108 +40,126 @@ typedef enum ScopeType_t{
 /**
  * The rest of the token structs will inherit from this Node
  */
-class Node{};
+class Node{
+
+public:
+    string name;
+    string value;
+    TokenType type;
+
+Node( TokenType type, string name = "",string value = "null"):name(name), type(type), value(value){};
+
+};
 #define YYSTYPE Node*
+
+class Variable : public Node{
+public:
+    int offset;
+	
+    Variable(TokenType type , string name = "", int offset = 0):Node(type, name), offset(offset){}
+};
+
+
 
 
 /**
  * TOKENS
  */
-class VOID_T : public Node{
-public:
-    VariableType type = VOID_t;
-};
-class ASSIGN_T : public Node{
-};
-class OR_T : public Node{};
-class AND_T : public Node{};
-class EQUALOP_T : public Node{
-    string op;
-};
-class RELATIONOP_T: public Node{
-    string op;
-};
-class ADDOPS_T : public Node{
-    string op;
-};
-class IF_T : public Node{};
-class MULTOPS_T : public Node{
-    string op;
-};
-class LPAREN_T : public Node{};
-class RPAREN_T : public Node{};
-class NOT_T : public Node{};
-class INT_T : public Node{
-public:
-    VariableType type = INT_t;
-};
-class BYTE_T : public Node{
-public:
-    VariableType type = BYTE_t;
-};
-class B_T : public Node{};
-class BOOL_T : public Node{
-public:
-    VariableType type = BOOL_t;
-};
-class ENUM_T : public Node{
+// class VOID_T : public Node{
+// public:
+//     VariableType type = VOID_t;
+// };
+// class ASSIGN_T : public Node{
+// };
+// class OR_T : public Node{};
+// class AND_T : public Node{};
+// class EQUALOP_T : public Node{
+//     string op;
+// };
+// class RELATIONOP_T: public Node{
+//     string op;
+// };
+// class ADDOPS_T : public Node{
+//     string op;
+// };
+// class IF_T : public Node{};
+// class MULTOPS_T : public Node{
+//     string op;
+// };
+// class LPAREN_T : public Node{};
+// class RPAREN_T : public Node{};
+// class NOT_T : public Node{};
+// class INT_T : public Node{
+// public:
+//     VariableType type = INT_t;
+// };
+// class BYTE_T : public Node{
+// public:
+//     VariableType type = BYTE_t;
+// };
+// class B_T : public Node{};
+// class BOOL_T : public Node{
+// public:
+//     VariableType type = BOOL_t;
+// };
+// class ENUM_T : public Node{
 
-    //TODO MIGHT ADD STUFF HER E
-};
-class TRUE_T : public Node{};
-class FALSE_T : public Node{};
-class RETURN_T : public Node{};
-class ELSE_T : public Node{};
-class WHILE_T : public Node{};
-class BREAK_T : public Node{};
-class CONTINUE_T : public Node{};
-class SC_T : public Node{};
-class COMMA_T : public Node{};
-class LBRACE_T : public Node{};
-class RBRACE_T : public Node{};
-class ID_T : public Node{
-public:
-    string id;
-    int offset;
-    VariableType type;
-    string value;
-};
-class NUM_T : public Node{
-public:
-    string value;
-};
-class STRING_T : public Node{
-public:
-    string value;
-};
-
-
-
-//Grammar variables
+//     //TODO MIGHT ADD STUFF HER E
+// };
+// class TRUE_T : public Node{};
+// class FALSE_T : public Node{};
+// class RETURN_T : public Node{};
+// class ELSE_T : public Node{};
+// class WHILE_T : public Node{};
+// class BREAK_T : public Node{};
+// class CONTINUE_T : public Node{};
+// class SC_T : public Node{};
+// class COMMA_T : public Node{};
+// class LBRACE_T : public Node{};
+// class RBRACE_T : public Node{};
+// class ID_T : public Node{
+// public:
+//     string id;
+//     int offset;
+//     VariableType type;
+//     string value;
+// };
+// class NUM_T : public Node{
+// public:
+//     string value;
+// };
+// class STRING_T : public Node{
+// public:
+//     string value;
+// };
 
 
 
-class EXP_T : public Node{
-    VariableType type;
-    string value;
-};
-class ENUMTYPE_T : public Node{};
-class TYPE_T : public Node{};
-class EXPLIST_T : public Node{};
-class CALL_T : public Node{};
-class STATEMENT_T : public Node{};
-class STATEMENTS_T : public Node{};
-class ENUMERATOR_T : public Node{};
-class ENUMERATORLIST_T : public Node{};
-class FORMALDECL_T : public Node{};
-class FORMALSLIST_T : public Node{};
-class FORMALS_T : public Node{};
-class RETTYPE_T : public Node{};
-class ENUMDECL_T : public Node{};
-class ENUMS_T : public Node{};
-class FUNCDEL_T : public Node{};
-class FUNCS_T : public Node{};
-class PROGRAM_T : public Node{};
+// //Grammar variables
+
+
+
+// class EXP_T : public Node{
+//     VariableType type;
+//     string value;
+// };
+// class ENUMTYPE_T : public Node{};
+// class TYPE_T : public Node{};
+// class EXPLIST_T : public Node{};
+// class CALL_T : public Node{};
+// class STATEMENT_T : public Node{};
+// class STATEMENTS_T : public Node{};
+// class ENUMERATOR_T : public Node{};
+// class ENUMERATORLIST_T : public Node{};
+// class FORMALDECL_T : public Node{};
+// class FORMALSLIST_T : public Node{};
+// class FORMALS_T : public Node{};
+// class RETTYPE_T : public Node{};
+// class ENUMDECL_T : public Node{};
+// class ENUMS_T : public Node{};
+// class FUNCDEL_T : public Node{};
+// class FUNCS_T : public Node{};
+// class PROGRAM_T : public Node{};
 
 
 
