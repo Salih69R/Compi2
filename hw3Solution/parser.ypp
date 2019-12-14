@@ -10,9 +10,10 @@
 	extern int yylineno;
 	
 	using namespace std;
-
-	Symbol_Table symbolTable;
+	
+	Symbol_Table symbolTable = Symbol_Table();
 	Function* curFunc;
+	stack<vector<Node*>> ParamListStack = stack<vector<Node*>>();
 	
 
 %}
@@ -49,6 +50,8 @@ Funcs :			/*epsilon*/
 FuncDecl :		RetType ID  {
 							if(symbolTable.getVar($2->name)){
 								errorDef(yylineno, $2->name);
+								delete $1;
+								delete $2;
 								exit(0);
 							}
 							curFunc = new Function($2->name,$1->type);
@@ -59,6 +62,7 @@ FuncDecl :		RetType ID  {
 						{symbolTable.closeScope();
 							delete $1;
 							delete $2;
+							delete curFunc;
 							}
 						;
 
@@ -142,15 +146,51 @@ Statement :		LBRACE Statements RBRACE
 				| CONTINUE SC 														
 						{};
 
-Call :			ID LPAREN ExpList RPAREN 										
-						{}
+Call :			ID LPAREN {ParamListStack.push(vector<Node*>()); } ExpList RPAREN 										
+						{
+							Function* callee = (Function*)symbolTable.getVar($1->name);
+							auto& vec = ParamListStack.top();
+
+							if (callee == nullptr || callee->type != FUNCTION_t){
+								delete $1;
+								errorUndefFunc(yylineno, $1->name);
+								
+								for(int i = 0; i< vec.size() ; ++i)
+									delete vec[i];
+								
+								ParamListStack.pop();
+								exit(0);
+							}
+							delete $1;
+							callee->ValidateParameters(vec);
+							$$ = new Node(callee->returnType);
+
+							for(int i = 0; i< vec.size() ; ++i)
+								delete vec[i];	
+							ParamListStack.pop();
+
+						}
+
 				| ID LPAREN RPAREN 													
-						{};
+						{
+							Function* callee = (Function*)symbolTable.getVar($1->name);
+							if (callee == nullptr || callee->type != FUNCTION_t){
+								delete $1;
+								errorUndefFunc(yylineno, $1->name);
+								exit(0);
+							}
+							delete $1;
+							//check about the delete here 
+							auto tmp = vector<Node*>();
+							callee->ValidateParameters(tmp);
+							$$ = new Node(callee->returnType);
+
+						};
 
 ExpList :		Exp 														
-						{}
+						{ParamListStack.top().push_back($1);}
 				| Exp COMMA ExpList 												
-						{};
+						{ParamListStack.top().push_back($1);};
 
 Type :			INT 															
 						{$$ = new Node(INT_t);}
@@ -207,17 +247,23 @@ Exp :			LPAREN Exp RPAREN
 
 				| ID 																
 					{ Variable* var = symbolTable.getVar($1->name);
-							if(var == NULL){
-								errorDef(yylineno, $2->name);
+							if(var == nullptr){
+								errorDef(yylineno, $1->name);
 								delete $1;
 								exit(0);
 							}
-						$$ = new Variable(UNDEFYET_t,$1->name);
+						$$ = new Variable($1->type,$1->name);
 						delete $1;
 					}
 
 				| Call 																
-						{}
+					{
+						if($1->type == VOID_t){
+							errorMismatch(yylineno);
+							exit(0);
+						}
+						$$ = $1;
+					}
 
 				| NUM 																
 						{	$$ = new Node(NUM_t , "" , $1->value);
@@ -225,10 +271,9 @@ Exp :			LPAREN Exp RPAREN
 						}
 
 				| NUM B 														
-					{	if(!(stoi($1->value) >= 0 (stoi($1->value) <= 255)){
-											stringstream ss;
-											ss << $1->value;
-											errorByteTooLarge(yylineno, ss.str());
+					{	if( !( stoi($1->value) >= 0 && (stoi($1->value) <= 255))){
+										
+											errorByteTooLarge(yylineno, $1->value);
 											delete $1;
 											exit(0);
 										}
@@ -313,7 +358,11 @@ Exp :			LPAREN Exp RPAREN
 						}
 
 				| LPAREN Type RPAREN Exp 											
-						{};
+						{
+							//enums we should save thier number so cast is available and the max number
+							//check if the variable exsists.
+
+						};
 
 
 %%
@@ -323,9 +372,9 @@ Exp :			LPAREN Exp RPAREN
 int main()
 {
 
-	yyparse()
-	Function* main_func = (Function*)symbolTable.top()->getVariable("main");
-	if (main_func == NULL || main_func->type != FUNCTION || main_func->paramTypes.size()!= 0 || main_func->returnType != VOID_t){
+	yyparse();
+	Function* main_func = (Function*)symbolTable.getVar("main");
+	if (main_func == nullptr || main_func->type != FUNCTION_t || main_func->paramTypes.size()!= 0 || main_func->returnType != VOID_t){
 		errorMainMissing();
 		return 0;
 	}

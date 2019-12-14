@@ -86,7 +86,7 @@ class Function : public Variable{
 
 
 
-	void ValidateParameters(vector<TokenType>& callerParams);
+	void ValidateParameters(vector<Node*>& callerParams);
 
 };
 

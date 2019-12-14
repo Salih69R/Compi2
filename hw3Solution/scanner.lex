@@ -109,7 +109,7 @@ continue 										{
 													return ID; 
 												} 
 0|[1-9][0-9]*									{
-													yylval = new Node(NUM_t,"undefined",yytext);
+													yylval = new Node(NUM_t,"",yytext);
 													return NUM; 
 												} 
 ["](([^\n\r\"\\]|\\[rnt"\\])+)["]				{

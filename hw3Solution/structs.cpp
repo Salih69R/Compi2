@@ -26,7 +26,7 @@ vector<string> TokensToString(vector<TokenType>& vec){
 
 
 
-    Function::Function(string name , TokenType returnType): Variable(FUNCTION_t, name), returnType(returnType), preconditionCounter(0) {
+    Function::Function(string name , TokenType returnType): Variable(FUNCTION_t, name), returnType(returnType) {
 		paramTypes = vector<TokenType>();
 	}
 
@@ -50,15 +50,17 @@ vector<string> TokensToString(vector<TokenType>& vec){
 		params.push_back(param);
 	}
 
-	void Function::ValidateParameters(vector<TokenType>& callerParams) {
+	void Function::ValidateParameters(vector<Node*>& callerParams) {
 		if (callerParams.size() != paramTypes.size()) {
-			errorPrototypeMismatch(yylineno, name, TokensToString(paramTypes));
+            auto tmp = TokensToString(paramTypes);
+            errorPrototypeMismatch(yylineno, name, tmp);
 			exit(0);
 		}
 
 		for (int i = 0; i < paramTypes.size(); i++) {
-            if(!(paramTypes[i] == (callerParams)[i] || ((callerParams)[i] == BYTE_t && paramTypes[i] == INT_t))){
-                errorPrototypeMismatch(yylineno, name, TokensToString(paramTypes));
+            if(!(paramTypes[i] == (callerParams)[i]->type || ((callerParams)[i]->type == BYTE_t && paramTypes[i] == INT_t))){
+                auto tmp = TokensToString(paramTypes);
+                errorPrototypeMismatch(yylineno, name, tmp );
 				exit(0);
             }
         }
