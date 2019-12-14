@@ -11,7 +11,8 @@
 	
 	using namespace std;
 
-	
+	Symbol_Table symbolTable;
+	Function* curFunc;
 	
 
 %}
@@ -45,8 +46,21 @@ Funcs :			/*epsilon*/
 
 
 
-FuncDecl :		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE 	
-						{};
+FuncDecl :		RetType ID  {
+							if(symbolTable.getVar($2->name)){
+								errorDef(yylineno, $2->name);
+								exit(0);
+							}
+							curFunc = new Function($2->name,$1->type);
+							$2->type = FUNCTION_t;
+						} LPAREN Formals RPAREN LBRACE 
+						{symbolTable.insertFunc(curFunc);}
+						Statements RBRACE 
+						{symbolTable.closeScope();
+							delete $1;
+							delete $2;
+							}
+						;
 
 Enums :			/*epsilon*/ 															
 						{}
@@ -57,9 +71,9 @@ EnumDecl :		ENUM ID LBRACE EnumeratorList RBRACE SC
 						{};
 
 RetType :		Type 														
-						{}
+						{$$ = $1;}
 				| VOID 																
-						{};
+						{$$ = new Node(VOID_t);};
 
 Formals :		/*epsilon*/ 												
 						{}
@@ -72,7 +86,10 @@ FormalsList :	FormalDecl
 						{};
 
 FormalDecl :	Type ID 													
-						{}
+						{
+							curFunc->addParam(new Variable($1->type,$2->name));
+							$2->type = $1->type;
+						}
 				| EnumType ID 														
 						{};
 
@@ -94,14 +111,14 @@ Statement :		LBRACE Statements RBRACE
 						{}
 				| Type ID SC 														
 
-						{}
+						{$2->type = $1->type;}
 				| EnumType ID SC 													
 						{}
 				| EnumDecl 															
 		
 						{}
 				| Type ID ASSIGN Exp SC 											
-						{}
+						{$2->type = $1->type;}
 				| EnumType ID ASSIGN Exp SC 										
 						{}
 				| ID ASSIGN Exp SC 													
@@ -136,61 +153,164 @@ ExpList :		Exp
 						{};
 
 Type :			INT 															
-						{}
+						{$$ = new Node(INT_t);}
 				| BYTE 																
-						{}
+						{$$ = new Node(BYTE_t);}
 				| BOOL 																
-						{};
+						{$$ = new Node(BOOL_t);};
 
 EnumType :		ENUM ID 													
 						{};
 						
 
 Exp :			LPAREN Exp RPAREN 											
-						
-						{}
+						{$$ = $2;}
+
 				| Exp ADDOPS Exp 													
-						
-						{}
+						{ if (($1->type != INT_t && $1->type !=BYTE_t) || ($3->type != INT_t && $3->type != BYTE_t)){
+							errorMismatch(yylineno);
+							delete $1;
+							delete $3;
+							exit(0);
+						}
+						if ($1->type == BYTE_t && $3->type == BYTE_t){
+							delete $1;
+							delete $3;
+							$$ = new Node(BYTE_t);
+						}
+						else{ 
+							$$= new Node(INT_t);
+							delete $1;
+							delete $3;
+							}
+
+						}
 				| Exp MULTOPS Exp 													
-						{}
+						{ if (($1->type != INT_t && $1->type !=BYTE_t) || ($3->type != INT_t && $3->type != BYTE_t)){
+							errorMismatch(yylineno);
+							delete $1;
+							delete $3;
+							exit(0);
+						}
+						if ($1->type == BYTE_t && $3->type == BYTE_t){
+							delete $1;
+							delete $3;
+							$$ = new Node(BYTE_t);
+						}
+						else{ 
+							$$= new Node(INT_t);
+							delete $1;
+							delete $3;
+							}
+
+						}
 
 				| ID 																
-						{}
+					{ Variable* var = symbolTable.getVar($1->name);
+							if(var == NULL){
+								errorDef(yylineno, $2->name);
+								delete $1;
+								exit(0);
+							}
+						$$ = new Variable(UNDEFYET_t,$1->name);
+						delete $1;
+					}
 
 				| Call 																
 						{}
 
 				| NUM 																
-						{}
+						{	$$ = new Node(NUM_t , "" , $1->value);
+							delete $1;
+						}
 
 				| NUM B 														
-						{}
+					{	if(!(stoi($1->value) >= 0 (stoi($1->value) <= 255)){
+											stringstream ss;
+											ss << $1->value;
+											errorByteTooLarge(yylineno, ss.str());
+											delete $1;
+											exit(0);
+										}
+						$$ = new Node(BYTE_t,"",$1->value);
+						delete $1;
+
+					}
 
 				| STRING 															
-						{}
+						{$$ = new Node(STRING_t);}
 
 				| TRUE 																
-						{}
+						{$$ = new Node(BOOL_t);}
 
 				| FALSE 															
-						{}
+						{$$ = new Node(BOOL_t);}
 						
 				| NOT Exp 															
-						{}
+						{
+							if($2->type != BOOL_t){
+									errorMismatch(yylineno);
+									delete $2;
+									exit(0);
+							}
+							//check about the names , if all of the are "" and we created empty var , or var with name identifed such as numm,
+							$$ = new Node(BOOL_t);
+							delete $2;
+						}
 
 
 				| Exp AND Exp 														
-						{}
+						{
+							if($1->type != BOOL_t || $3->type != BOOL_t){
+									errorMismatch(yylineno);
+									delete $1;
+									delete $3;
+									exit(0);
+							}
+							$$ = new Node(BOOL_t);
+							delete $1;
+							delete $3;
+
+						}
 
 				| Exp OR Exp 														
-						{}
+						{
+							if($1->type != BOOL_t || $3->type != BOOL_t){
+									errorMismatch(yylineno);
+									delete $1;
+									delete $3;
+									exit(0);
+							}
+							$$ = new Node(BOOL_t);
+							delete $1;
+							delete $3;
+						}
 
 				| Exp RELATIONOP Exp 												
-						{}
+						{
+							if(($1->type != INT_t && $1->type != BYTE_t) || ($3->type != INT_t && $3->type != BYTE_t)){
+									errorMismatch(yylineno);
+									delete $1;
+									delete $3;
+									exit(0);
+							}
+							$$ = new Node(BOOL_t);
+							delete $1;
+							delete $3;
+						}
 
 				| Exp EQUALOP Exp 													
-						{}
+						{
+							if(($1->type != INT_t && $1->type != BYTE_t) || ($3->type != INT_t && $3->type != BYTE_t)){
+									errorMismatch(yylineno);
+									delete $1;
+									delete $3;
+									exit(0);
+							}
+							$$ = new Node(BOOL_t);
+							delete $1;
+							delete $3;
+						}
 
 				| LPAREN Type RPAREN Exp 											
 						{};
@@ -202,12 +322,23 @@ Exp :			LPAREN Exp RPAREN
 
 int main()
 {
-    return yyparse();
+
+	yyparse()
+	Function* main_func = (Function*)symbolTable.top()->getVariable("main");
+	if (main_func == NULL || main_func->type != FUNCTION || main_func->paramTypes.size()!= 0 || main_func->returnType != VOID_t){
+		errorMainMissing();
+		return 0;
+	}
+
+
+    return 0;
 }
 
 void yyerror(char const* error){
-//	errorSyn(yylineno);
+	errorSyn(yylineno);
 	exit(0);
 }
+
+
 
 
