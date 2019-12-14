@@ -60,6 +60,145 @@ public:
 };
 
 
+class Scope{
+public:
+
+    stack<Variable*> local_table;
+    ScopeType type;
+    
+    //TODO: when this constructor is called, on the outside need to update the offset stack (new push)
+    Scope(ScopeType type): type(type){
+        local_table = stack<Variable*>();
+    }
+
+//TODO: update offset when using this
+    void insertVar(Variable* var){
+       local_table.push(var);
+    }
+
+
+
+    Variable* getVar(string gname){
+        stack<Variable*> cpy_stack = stack<Variable*>();
+        Variable *curVar, *foundVar = nullptr;
+
+
+        while(!local_table.empty()){
+            if(local_table.top()->name == gname){
+                foundVar = local_table.top();
+                break;
+            }
+            curVar = local_table.top();
+            local_table.pop();
+            cpy_stack.push(curVar);
+        }
+
+         while (!cpy_stack.empty()){
+            curVar = cpy_stack.top();
+            local_table.push(curVar);
+            cpy_stack.pop();
+         }
+         return foundVar;
+    }
+
+    ~Scope(){
+
+        while(!local_table.empty()){
+
+            delete(local_table.top());
+            local_table.pop();
+        }
+    }
+
+
+    //TODO : when using destructor update offset 
+    //TODO check functions
+
+
+};
+
+
+
+class Sympol_Table{
+
+public:
+    stack<int> offset_stack;
+    stack<Scope> scopes_table;
+
+};
+
+
+
+//bool isAlreadyDefined( base_type_info& item){
+//
+//
+//    stack<stack<base_type_info>> cpy_table_stack;
+//    stack<base_type_info> cpy_stack;
+//    bool found = false;
+//
+//    while(!tables_stack.empty()){
+//        if (isContainItem(tables_stack.top() , item)){
+//            found = true;
+//            break;
+//        }
+//        cpy_stack = tables_stack.top();
+//        cpy_table_stack.push(cpy_stack);
+//        tables_stack.pop();
+//    }
+//
+//    while(!cpy_table_stack.empty()){
+//        cpy_stack = cpy_table_stack.top();
+//        tables_stack.push(cpy_stack);
+//        cpy_table_stack.pop();
+//    }
+//
+//    return found;
+//
+//
+//
+//
+//}
+//
+
+
+
+//void Exit_a_block(){
+//
+//    while(!tables_stack.top().empty()){
+//        tables_stack.top().pop();
+//    }
+//}
+//
+//
+//void Close_a_Block(){
+//
+//    Exit_a_block();
+//    offset_stack.pop();
+//
+//}
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -247,97 +386,8 @@ public:
 //stack<int> offset_stack;
 //stack<stack<base_type_info>> tables_stack;
 //
-//bool isContainItem(stack<base_type_info>& table_stack , base_type_info& item){
-//
-//    stack<base_type_info> cpy_stack;
-//    bool found = false;
-//    base_type_info cpy_item;
-//
-//    while(!table_stack.empty()){
-//        //TODO check other identeinssfd
-//        if (table_stack.top().name == item.name){
-//            found = true;
-//            break;
-//        }
-//        cpy_item = table_stack.top();
-//        cpy_stack.push(cpy_item);
-//        table_stack.pop();
-//    }
-//
-//    while (!cpy_stack.empty()){
-//        cpy_item = cpy_stack.top();
-//        table_stack.push(cpy_item);
-//        cpy_stack.pop();
-//    }
-//
-//    return found;
-//
-//}
-//bool isAlreadyDefined( base_type_info& item){
-//
-//
-//    stack<stack<base_type_info>> cpy_table_stack;
-//    stack<base_type_info> cpy_stack;
-//    bool found = false;
-//
-//    while(!tables_stack.empty()){
-//        if (isContainItem(tables_stack.top() , item)){
-//            found = true;
-//            break;
-//        }
-//        cpy_stack = tables_stack.top();
-//        cpy_table_stack.push(cpy_stack);
-//        tables_stack.pop();
-//    }
-//
-//    while(!cpy_table_stack.empty()){
-//        cpy_stack = cpy_table_stack.top();
-//        tables_stack.push(cpy_stack);
-//        cpy_table_stack.pop();
-//    }
-//
-//    return found;
-//
-//
-//
-//
-//}
-//
-//
-//void Open_a_Block(){
-//
-//    stack<base_type_info> new_block;
-//    tables_stack.push(new_block);
-//    offset_stack.push(offset_stack.empty() ? 0 : offset_stack.top());
-//
-//}
-//
-//
-//void Exit_a_block(){
-//
-//    while(!tables_stack.top().empty()){
-//        tables_stack.top().pop();
-//    }
-//}
-//
-//
-//void Close_a_Block(){
-//
-//    Exit_a_block();
-//    offset_stack.pop();
-//
-//}
-//
-//void Insert_a_item(base_type_info item){
-//
-//    tables_stack.top().push(item);
-//    assert(!offset_stack.empty() && !tables_stack.empty());
-//
-//    int current_ofsset = offset_stack.top();
-//    offset_stack.pop();
-//    offset_stack.push(1 + current_ofsset);
-//
-//}
+
+
 //
 //void Insert_a_function(base_type_info func){
 //
