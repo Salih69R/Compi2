@@ -99,9 +99,12 @@ class Scope{
 public:
 
     stack<Variable*> local_table;
-    ScopeType type;
+    //ScopeType type; 
+
+    bool isLoop;
+    Function* curFunc;
     
-    Scope(ScopeType type);
+    Scope(ScopeType type, Function* parentFunc = nullptr);
     void insertVar(Variable* var);
     Variable* getVar(string gname);
     ~Scope();
@@ -117,7 +120,7 @@ public:
     vector<Scope> scopes_table;
 
     Variable* getVar(string name);
-    void openScope(ScopeType type);
+    void openScope(ScopeType type, Function* parentFunc = nullptr );
     void insertVar(Variable* var);
     void insertFunc(Function* f);//assumes f is full
     void closeScope();

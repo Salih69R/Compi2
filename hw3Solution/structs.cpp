@@ -69,10 +69,27 @@ vector<string> TokensToString(vector<TokenType>& vec){
 
 
 
-Scope::Scope(ScopeType type): type(type){
-        local_table = stack<Variable*>();
-    }
+Scope::Scope(ScopeType type,  Function* parentFunc ):  curFunc(parentFunc) 
+{
 
+
+         if (type == GLOBAL ){
+            curFunc = nullptr;
+            isLoop = false;
+            local_table = stack<Variable*>();
+            return ;
+        }
+
+
+        if(type == FUNCTION && parentFunc == nullptr){
+            cout << "error: in Scope Constructor, must give parent function for scope of type function, you fucker" << endl;
+        }
+        isLoop = (type == LOOP);
+        local_table = stack<Variable*>();
+    
+    
+}
+        
        void Scope::insertVar(Variable* var){
        local_table.push(var);
     }
@@ -127,8 +144,21 @@ Variable* Scope::getVar(string gname){
     }
 
 
-    void Symbol_Table::openScope(ScopeType type){
-        scopes_table.push_back(Scope(type));
+    void Symbol_Table::openScope(ScopeType type, Function* parentFunc){
+
+       
+        Scope curScope = Scope(type,parentFunc );
+
+        if(parentFunc == nullptr && type != GLOBAL){
+            //also for normal
+            curScope.curFunc = scopes_table[scopes_table.size()-1].curFunc;//get cur function from father scope
+         }
+         if(type == NORMAL){
+             curScope.isLoop = scopes_table[scopes_table.size()-1].isLoop;
+         }
+
+
+        scopes_table.push_back(curScope);
         offset_stack.push(offset_stack.empty() ? 0 : offset_stack.top()); 
 
     }
@@ -148,7 +178,7 @@ Variable* Scope::getVar(string gname){
     void Symbol_Table::insertFunc(Function* f) {
 		
         scopes_table[scopes_table.size()-1].insertVar(f);
-        openScope(FUNCTION);//no need to open scope in parser
+        openScope(FUNCTION, f);//no need to open scope in parser
         for (int i = 0; i < f->paramTypes.size() ; i++)
         {
             insertVar(f->params[i]);

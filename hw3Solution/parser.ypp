@@ -111,41 +111,132 @@ Statements :	Statement
 				| Statements Statement 												
 						{};
 
-Statement :		LBRACE Statements RBRACE 									
-						{}
+Statement :		LBRACE {
+					symbolTable.openScope(NORMAL);
+				} Statements RBRACE {
+					symbolTable.closeScope();
+						}
 				| Type ID SC 														
 
-						{$2->type = $1->type;}
+						{
+							Variable* var = symbolTable.getVar($2->name);
+							if(var != nullptr){
+								errorDef(yylineno, $2->name);
+								delete $1;
+								delete $2;
+								exit(0);
+							}
+							var = new Variable($1->type,$2->name);
+							symbolTable.insertVar(var);
+
+							delete $1;
+							delete $2;
+						}
 				| EnumType ID SC 													
 						{}
 				| EnumDecl 															
 		
 						{}
 				| Type ID ASSIGN Exp SC 											
-						{$2->type = $1->type;}
+						{
+							Variable* var = symbolTable.getVar($2->name);
+							if(var != nullptr){
+								errorDef(yylineno, $2->name);
+								delete $1;
+								delete $2;
+								delete $4;
+								exit(0);
+							}
+							var = new Variable($1->type,$2->name);
+							var->value = $4->value;
+
+
+							symbolTable.insertVar(var);
+							delete $1;
+							delete $2;
+							delete $4;
+							}
 				| EnumType ID ASSIGN Exp SC 										
 						{}
 				| ID ASSIGN Exp SC 													
-		
-						{}
+						{
+							Variable* var = symbolTable.getVar($1->name);
+							if(var == nullptr ){
+								errorDef(yylineno, $2->name);
+								delete $1;
+								delete $3;
+								exit(0);
+							}
+							if((var->type != $3->type) && (var->type != INT_t && $3->type != BYTE_t)){
+								errorMismatch(yylineno);
+								delete $1;
+								delete $3;
+								exit(0);
+							}
+							var->value = $3->value;
+
+							delete $1;
+							delete $3;
+						}
 				| Call SC 															
 						{}
 				| RETURN SC 														
-						{}
+						{
+							auto& scope = symbolTable.scopes_table[symbolTable.scopes_table.size()-1];
+							assert(scope.curFunc != nullptr);//grammar makes sure
+							auto f = scope.curFunc;
+							if(f->returnType != VOID_t){
+								errorMismatch(yylineno);
+								exit(0);
+							}
+						}
 				| RETURN Exp SC 													
+						{
+							auto& scope = symbolTable.scopes_table[symbolTable.scopes_table.size()-1];
+							assert(scope.curFunc != nullptr);//grammar makes sure
+							auto f = scope.curFunc;
+							if(f->returnType != $2->type && (f->returnType != INT_t && $2->type != BYTE_t) ){
+								errorMismatch(yylineno);
+								delete $2;
+								exit(0);
+							}
+						}
+				| IF LPAREN checkBoolExp RPAREN Statement 									
+						{
+						}
+				| IF LPAREN checkBoolExp  RPAREN Statement ELSE Statement 	
 						{}
-				| IF LPAREN Exp RPAREN Statement 									
-						{}
-				| IF LPAREN Exp RPAREN Statement ELSE Statement 						
-		
-						{}
-				| WHILE LPAREN Exp RPAREN Statement 									
-						{}
+				| WHILE LPAREN checkBoolExp 
+				{
+					 symbolTable.openScope(LOOP);
+				} RPAREN  Statement 									
+						{
+							symbolTable.closeScope();
+						 }
 				| BREAK SC 															
-						{}
+						{
+							auto& scope = symbolTable.scopes_table[symbolTable.scopes_table.size()-1];
+							if(!scope.isLoop){
+								errorUnexpectedBreak(yylineno);
+								exit(0);
+							}
+						}
 				| CONTINUE SC 														
-						{};
-
+						{
+							auto& scope = symbolTable.scopes_table[symbolTable.scopes_table.size()-1];
+							if(!scope.isLoop){
+								errorUnexpectedContinue(yylineno);
+								exit(0);
+							}
+						};
+checkBoolExp :     Exp {
+						if($1->type != BOOL_t)
+						{
+							errorMismatch(yylineno);
+							delete $1;
+							exit(0);
+						}
+					}
 Call :			ID LPAREN {ParamListStack.push(vector<Node*>()); } ExpList RPAREN 										
 						{
 							Function* callee = (Function*)symbolTable.getVar($1->name);
