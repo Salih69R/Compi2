@@ -115,7 +115,7 @@ continue 										{
 ["](([^\n\r\"\\]|\\[rnt"\\])+)["]				{
 													return STRING;
 												}
-"//"[^\r\n]*[ \r|\n|\r\n]?						;				;
+"//"[^\r\n]*[ \r|\n|\r\n]?						;
 {whitespace}									;
 .												{ errorLex(yylineno); exit(0);}
 
