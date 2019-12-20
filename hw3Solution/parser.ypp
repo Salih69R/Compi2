@@ -13,6 +13,7 @@
 	
 	Symbol_Table symbolTable = Symbol_Table();
 	Function* curFunc;
+	Enum_class* curEnumClass;
 	stack<vector<Node*>> ParamListStack = stack<vector<Node*>>();
 	
 
@@ -48,21 +49,28 @@ Funcs :			/*epsilon*/
 
 
 FuncDecl :		RetType ID  {
-							if(symbolTable.getVar($2->name)){
+							if(symbolTable.getVar($2->name) != nullptr){
 								errorDef(yylineno, $2->name);
 								delete $1;
 								delete $2;
 								exit(0);
 							}
+						
 							curFunc = new Function($2->name,$1->type);
 							$2->type = FUNCTION_t;
 						} LPAREN Formals RPAREN LBRACE 
-						{symbolTable.insertFunc(curFunc);}
+						{symbolTable.insertFunc(curFunc);
+						cout << "now we have main";
+						
+						}
 						Statements RBRACE 
-						{symbolTable.closeScope();
-							delete $1;
-							delete $2;
-							delete curFunc;
+						{	
+							//symbolTable.closeScope();
+							//delete $1;
+							//delete $2;
+							//delete curFunc;
+							
+							std::cout << "****** done **********" << std::endl;
 							}
 						;
 
@@ -71,8 +79,20 @@ Enums :			/*epsilon*/
 				| EnumDecl Enums 													
 						{};
 
-EnumDecl :		ENUM ID LBRACE EnumeratorList RBRACE SC 					
-						{};
+EnumDecl :		ENUM ID {
+							Node* var = symbolTable.getVar("enum " + $2->name );
+							if (! (var == nullptr || var->type != ENUM_CLASS_t)){
+							
+							errorDef(yylineno,"enum " + $2->name);
+							delete $2;
+							
+							exit(0);
+							}
+							delete $2;
+							curEnumClass = new Enum_class("enum " + $2->name);
+							
+						} LBRACE EnumeratorList RBRACE SC 					
+						{symbolTable.insertVar(curEnumClass);};
 
 RetType :		Type 														
 						{$$ = $1;}
@@ -91,20 +111,40 @@ FormalsList :	FormalDecl
 
 FormalDecl :	Type ID 													
 						{
+						cout << "before i have type" << endl;
 							curFunc->addParam(new Variable($1->type,$2->name));
 							$2->type = $1->type;
+							cout << "i have type" << endl;
 						}
-				| EnumType ID 														
-						{};
+				| EnumType {
+				
+							auto tmp = (Enum_class*)$1;
+							if(!symbolTable.CheckIfEnumInGlobalScope(tmp)){
+							//check this
+							errorUndef(yylineno,$1->name);
+							delete $1;
+							exit(0);
+						   } 
+						   } ID 														
+						{
+							
+							curFunc->addParam(new Enum_var(ENUM_t,$2->name,0,"",$1->name));
+							$2->type = $1->type;
+						
+						};
 
 
 EnumeratorList :	Enumerator 											
-						{}
+						{curEnumClass->enum_vals.push_back($1->name);
+						  delete $1;
+						}
 				| EnumeratorList COMMA Enumerator 									
 						{};
 
 Enumerator :		ID 															
-						{};
+						{$$ = new Node(Enumerator_t,$1->name);
+						delete $1;
+						};
 
 Statements :	Statement 													
 						{}
@@ -132,14 +172,31 @@ Statement :		LBRACE {
 							delete $1;
 							delete $2;
 						}
-				| EnumType ID SC 													
-						{}
+				| EnumType ID  SC 													
+						{
+						
+						Variable* var = symbolTable.getVar($2->name);
+							if(var != nullptr){
+								errorDef(yylineno, $2->name);
+								delete $1;
+								delete $2;
+								exit(0);
+							}
+							//check here abut value
+							var = new Enum_var(ENUM_t,$2->name,0,"",$1->name);
+							symbolTable.insertVar(var);
+
+							delete $1;
+							delete $2;
+						
+						
+						}
 				| EnumDecl 															
 		
 						{}
 				| Type ID ASSIGN Exp SC 											
 						{
-							Variable* var = symbolTable.getVar($2->name);
+							/*Variable* var = symbolTable.getVar($2->name);
 							if(var != nullptr){
 								errorDef(yylineno, $2->name);
 								delete $1;
@@ -147,6 +204,7 @@ Statement :		LBRACE {
 								delete $4;
 								exit(0);
 							}
+							cout << "we have x ***************" << endl;
 							var = new Variable($1->type,$2->name);
 							var->value = $4->value;
 
@@ -155,9 +213,33 @@ Statement :		LBRACE {
 							delete $1;
 							delete $2;
 							delete $4;
+							*/
+						}
+				| EnumType ID {Variable* var = symbolTable.getVar($2->name);
+								if(var != nullptr){
+								errorDef(yylineno, $2->name);
+								delete $2;
+								delete $1;
+								exit(0);
+								}
+								}
+				ASSIGN Exp { 
+								auto tmp = (Enum_class*)$1;
+								if (! tmp->contains($4->name) ){
+											errorUndefEnumValue(yylineno,$4->name);
+											delete $2;
+											delete $1;
+											delete $4;
+											exit(0);		
+								
+								}
 							}
-				| EnumType ID ASSIGN Exp SC 										
-						{}
+				SC{Enum_var* new_var = new Enum_var(ENUM_t,$2->name,0,$4->name,$1->name);
+										symbolTable.insertVar(new_var);
+										delete $1;
+										delete $2;
+										delete $4;
+				}
 				| ID ASSIGN Exp SC 													
 						{
 							Variable* var = symbolTable.getVar($1->name);
@@ -284,14 +366,26 @@ ExpList :		Exp
 						{ParamListStack.top().push_back($1);};
 
 Type :			INT 															
-						{$$ = new Node(INT_t);}
+						{
+						cout << "we have x ***************" << endl;
+						cout << "we got in";
+						$$ = new Node(INT_t);}
 				| BYTE 																
 						{$$ = new Node(BYTE_t);}
 				| BOOL 																
 						{$$ = new Node(BOOL_t);};
 
 EnumType :		ENUM ID 													
-						{};
+						{Node* var = symbolTable.getVar("enum " + $2->name);
+							if (var == nullptr){
+							
+							errorUndefEnum(yylineno,"enum " + $2->name);
+							delete $2;
+							exit(0);
+							}
+							delete $2;
+							$$ = var;
+						};
 						
 
 Exp :			LPAREN Exp RPAREN 											
@@ -357,7 +451,8 @@ Exp :			LPAREN Exp RPAREN
 					}
 
 				| NUM 																
-						{	$$ = new Node(NUM_t , "" , $1->value);
+						{ cout << "we have 5"	;
+						$$ = new Node(NUM_t , "" , $1->value);
 							delete $1;
 						}
 
@@ -448,11 +543,33 @@ Exp :			LPAREN Exp RPAREN
 							delete $3;
 						}
 
-				| LPAREN Type RPAREN Exp 											
+				| LPAREN Type { if ( $2->type != INT_t){
+								delete $2;
+								errorMismatch(yylineno);
+								exit(0);
+								} } RPAREN Exp 											
 						{
-							//enums we should save thier number so cast is available and the max number
-							//check if the variable exsists.
-
+							Node* enum_var = symbolTable.getVar($4->name);
+							if (enum_var == nullptr){
+								delete $2;
+								delete $4;
+								errorUndef(yylineno,$4->name);
+								exit(0);
+							}
+							
+							if (enum_var->type != ENUM_t){
+								delete $2;
+								delete $4;
+								errorMismatch(yylineno);
+								exit(0);
+							}
+							
+							auto enum_var_casted = (Enum_var*)enum_var; 
+							Variable* new_int = new Variable(INT_t,enum_var_casted->name,enum_var_casted->offset,enum_var_casted->value);
+							delete $2;
+							delete $4;
+							delete enum_var;
+							$$ = new_int;
 						};
 
 
@@ -462,13 +579,15 @@ Exp :			LPAREN Exp RPAREN
 
 int main()
 {
-
+	symbolTable.openScope(GLOBAL);
+	
 	yyparse();
-	Function* main_func = (Function*)symbolTable.getVar("main");
+	
+	/*Function* main_func = (Function*)symbolTable.getVar("main");
 	if (main_func == nullptr || main_func->type != FUNCTION_t || main_func->paramTypes.size()!= 0 || main_func->returnType != VOID_t){
 		errorMainMissing();
 		return 0;
-	}
+	}*/
 
 
     return 0;
