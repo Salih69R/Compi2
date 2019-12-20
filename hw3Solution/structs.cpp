@@ -11,7 +11,10 @@ vector<string> TokensToString(vector<TokenType>& vec){
             case BYTE_t : ret.push_back("BYTE_t"); break;
             case B_t : ret.push_back("B_t"); break;
             case STRING_t : ret.push_back("STRING_t"); break;
-            default : cout << "shouldnt be here - unexpected token in  TokensToString" << endl; break;
+            default : cout << "shouldnt be here - unexpected token in  TokensToString" << endl;
+                cout << "wrong type is" << vec[i] << endl;
+
+                break;
         }
     }
 
@@ -48,6 +51,7 @@ vector<string> TokensToString(vector<TokenType>& vec){
 
         paramTypes.push_back(param->type);
         param->offset = -1 * (params.size() + 1);
+
 		params.push_back(param);
 	}
 
@@ -203,11 +207,11 @@ bool Enum_class::contains(string val){
 
 
     void Symbol_Table::insertFunc(Function* f) {
-        cout << "we are here";
+
         scopes_table[(scopes_table.size()-1 < 0 ? 0 :scopes_table.size()-1)].insertVar(f);
         cout << scopes_table[0].local_table.size() << endl;
-        cout << "we are here 1";
-     //   cout << f->name  << "   " << f->returnType << endl;
+
+
         openScope(FUNCTION, f);//no need to open scope in parser
         for (int i = 0; i < f->paramTypes.size() ; i++)
         {
