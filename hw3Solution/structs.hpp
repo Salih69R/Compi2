@@ -147,6 +147,7 @@ public:
     void insertFunc(Function* f);//assumes f is full
     void closeScope();
 	bool CheckIfEnumInGlobalScope(Enum_class* cls);
+	void p_sys_stack(vector<Scope> sys);
     
 };
 

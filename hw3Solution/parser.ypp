@@ -58,20 +58,23 @@ FuncDecl :		RetType ID  {
 						
 							curFunc = new Function($2->name,$1->type);
 							$2->type = FUNCTION_t;
+							
 						} LPAREN Formals RPAREN LBRACE 
-						{symbolTable.insertFunc(curFunc);
+						{
+					
+						symbolTable.insertFunc(curFunc);
 						
 						
 						}
 						Statements RBRACE 
 						{	
+						
+							
 							symbolTable.closeScope();
 							delete $1;
 							delete $2;
-							delete curFunc;
-							
 						
-							}
+						}
 						;
 
 Enums :			/*epsilon*/ 															
@@ -111,7 +114,7 @@ FormalsList :	FormalDecl
 
 FormalDecl :	Type ID 													
 						{
-							cout << $1->type << endl;
+							
 							
 							curFunc->addParam(new Variable($1->type,$2->name));
 							$2->type = $1->type;
@@ -197,7 +200,7 @@ Statement :		LBRACE {
 						{}
 				| Type ID ASSIGN Exp SC 											
 						{
-							/*Variable* var = symbolTable.getVar($2->name);
+							Variable* var = symbolTable.getVar($2->name);
 							if(var != nullptr){
 								errorDef(yylineno, $2->name);
 								delete $1;
@@ -205,16 +208,23 @@ Statement :		LBRACE {
 								delete $4;
 								exit(0);
 							}
+							if($1->type != $4->type && (!($1->type == INT_t  && $4->type == BYTE_t  )) )
+							{
+								errorMismatch(yylineno);
+								delete $1;
+								delete $2;
+								delete $4;
+								exit(0);
+							}
+							
 							
 							var = new Variable($1->type,$2->name);
-							var->value = $4->value;
-
-
+							var->value = $4->value;						
 							symbolTable.insertVar(var);
 							delete $1;
 							delete $2;
-							delete $4;
-							*/
+							
+							
 						}
 				| EnumType ID {Variable* var = symbolTable.getVar($2->name);
 								if(var != nullptr){
@@ -314,12 +324,12 @@ Statement :		LBRACE {
 						};
 checkBoolExp :     Exp {
 
-
+						string name = $1->name;
 						$1 = symbolTable.getVar($1->name);
 						
 						if($1 == nullptr)
 						{
-							errorDef(yylineno);
+							errorUndef(yylineno , name);
 							exit(0);
 						}						
 				
@@ -384,7 +394,7 @@ Type :			INT
 						{$$ = new Node(BYTE_t);}
 				| BOOL 																
 						{
-						cout << "i should be here" << endl;
+						
 						$$ = new Node(BOOL_t);};
 
 EnumType :		ENUM ID 													
@@ -411,14 +421,12 @@ Exp :			LPAREN Exp RPAREN
 							exit(0);
 						}
 						if ($1->type == BYTE_t && $3->type == BYTE_t){
-							delete $1;
-							delete $3;
+							
 							$$ = new Node(BYTE_t);
 						}
 						else{ 
 							$$= new Node(INT_t);
-							delete $1;
-							delete $3;
+							
 							}
 
 						}
@@ -430,14 +438,12 @@ Exp :			LPAREN Exp RPAREN
 							exit(0);
 						}
 						if ($1->type == BYTE_t && $3->type == BYTE_t){
-							delete $1;
-							delete $3;
+							
 							$$ = new Node(BYTE_t);
 						}
 						else{ 
 							$$= new Node(INT_t);
-							delete $1;
-							delete $3;
+							
 							}
 
 						}
@@ -445,12 +451,15 @@ Exp :			LPAREN Exp RPAREN
 				| ID 																
 					{ Variable* var = symbolTable.getVar($1->name);
 							if(var == nullptr){
-								errorDef(yylineno, $1->name);
+								errorUndef(yylineno, $1->name);
 								delete $1;
 								exit(0);
 							}
-						$$ = new Variable($1->type,$1->name);
-						delete $1;
+							
+							
+							
+							
+						$$ = var;
 					}
 
 				| Call 																
@@ -464,7 +473,7 @@ Exp :			LPAREN Exp RPAREN
 
 				| NUM 																
 						{ 
-						$$ = new Node(NUM_t , "" , $1->value);
+						$$ = new Node(INT_t , "" , $1->value);
 							delete $1;
 						}
 
@@ -498,7 +507,7 @@ Exp :			LPAREN Exp RPAREN
 							}
 							//check about the names , if all of the are "" and we created empty var , or var with name identifed such as numm,
 							$$ = new Node(BOOL_t);
-							delete $2;
+							
 						}
 
 
@@ -511,8 +520,7 @@ Exp :			LPAREN Exp RPAREN
 									exit(0);
 							}
 							$$ = new Node(BOOL_t);
-							delete $1;
-							delete $3;
+							
 
 						}
 
@@ -525,21 +533,22 @@ Exp :			LPAREN Exp RPAREN
 									exit(0);
 							}
 							$$ = new Node(BOOL_t);
-							delete $1;
-							delete $3;
+							
 						}
 
 				| Exp RELATIONOP Exp 												
 						{
-							if(($1->type != INT_t && $1->type != BYTE_t) || ($3->type != INT_t && $3->type != BYTE_t)){
+							
+							
+							if( ($1->type != INT_t && $1->type != BYTE_t) || ($3->type != INT_t && $3->type != BYTE_t)){
 									errorMismatch(yylineno);
 									delete $1;
 									delete $3;
 									exit(0);
 							}
+							
 							$$ = new Node(BOOL_t);
-							delete $1;
-							delete $3;
+							
 						}
 
 				| Exp EQUALOP Exp 													
@@ -551,8 +560,7 @@ Exp :			LPAREN Exp RPAREN
 									exit(0);
 							}
 							$$ = new Node(BOOL_t);
-							delete $1;
-							delete $3;
+							
 						}
 
 				| LPAREN Type { if ( $2->type != INT_t){
@@ -591,18 +599,27 @@ Exp :			LPAREN Exp RPAREN
 
 int main()
 {
+	/*
+		opening the global scope and adding the print and printi functions.
+		no need top open scopes for those func , therfor we added them as vars
+	
+	*/
 	symbolTable.openScope(GLOBAL);
 	curFunc = new Function("print", VOID_t);
 	Variable* dummy = new Variable(STRING_t);
 	curFunc->addParam(dummy);
-	symbolTable.insertFunc(curFunc);
+	symbolTable.insertVar(curFunc);
 	curFunc = new Function("printi", VOID_t);
-	dummy = new Variable(INT_t,"dummy2");
+	dummy = new Variable(INT_t,"");
 	curFunc->addParam(dummy);
-	symbolTable.insertFunc(curFunc);
+	symbolTable.insertVar(curFunc);
 	
 	yyparse();
 	
+	
+	symbolTable.p_sys_stack(symbolTable.scopes_table);
+	
+	/*checking if main exsists*/
 	Function* main_func = (Function*)symbolTable.getVar("main");
 	if (main_func == nullptr || main_func->type != FUNCTION_t || main_func->paramTypes.size()!= 0 || main_func->returnType != VOID_t){
 		errorMainMissing();

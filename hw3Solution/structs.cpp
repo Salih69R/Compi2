@@ -11,8 +11,9 @@ vector<string> TokensToString(vector<TokenType>& vec){
             case BYTE_t : ret.push_back("BYTE_t"); break;
             case B_t : ret.push_back("B_t"); break;
             case STRING_t : ret.push_back("STRING_t"); break;
-            default : cout << "shouldnt be here - unexpected token in  TokensToString" << endl;
+            default : cout << "shouldnt be here - unexpected token in  TokensToString, in i = " << i << endl;
                 cout << "wrong type is" << vec[i] << endl;
+                exit(0);
 
                 break;
         }
@@ -25,7 +26,41 @@ vector<string> TokensToString(vector<TokenType>& vec){
 
 
 
+void p_stack(stack<Variable*> st){
 
+    stack<Variable*> cpy = stack<Variable*>();
+    Variable* tmp;
+
+    cout <<  "the size is" << st.size()<< endl;
+    cout <<  "             " << "*****" << endl;
+    while(!st.empty()){
+
+
+        string var = st.top()->name == "" ? "empty string " : st.top()->name;
+        cout << "             " << var << endl;
+        tmp = st.top();
+        st.pop();
+        cpy.push(tmp);
+    }
+
+    cout << "             *****               " << endl;
+    while(!cpy.empty()){
+
+        tmp = cpy.top();
+        cpy.pop();
+        st.push(tmp);
+    }
+
+}
+
+void Symbol_Table::p_sys_stack(vector<Scope> sys) {
+
+    for (auto i = sys.begin(); i != sys.end(); ++i) {
+      //  cout << "       *******        " << endl;
+        p_stack((*i).local_table);
+       // cout << "       *******        " << endl;
+    }
+}
 
 
 
@@ -97,7 +132,9 @@ Scope::Scope(ScopeType type,  Function* parentFunc ):  curFunc(parentFunc)
 }
         
        void Scope::insertVar(Variable* var){
+      //     cout << "adding " << var->name << " to the local table" << endl;
        local_table.push(var);
+          // p_stack(local_table);
     }
 
 
@@ -109,6 +146,7 @@ Variable* Scope::getVar(string gname){
         while(!local_table.empty()){
             if(local_table.top()->name == gname){
                 foundVar = local_table.top();
+               // cout << "found" << local_table.top()->name  << " =? " << gname<< endl;
                 break;
             }
             curVar = local_table.top();
@@ -116,6 +154,9 @@ Variable* Scope::getVar(string gname){
             local_table.pop();
             cpy_stack.push(curVar);
         }
+
+   // cout << "cpy stack is : " << endl;
+    //p_stack(local_table);
 
          while (!cpy_stack.empty()){
             curVar = cpy_stack.top();
@@ -203,13 +244,17 @@ bool Enum_class::contains(string val){
         offset_stack.push(1 + last_offset); 
 
         var->offset = last_offset;
+
+       // cout << "stack after inserting var" << endl;
+        //p_stack(scopes_table[(scopes_table.size()-1 < 0 ? 0 :scopes_table.size()-1)].local_table);
     }
 
 
     void Symbol_Table::insertFunc(Function* f) {
 
+       // cout << "adding fun : " << f->name << endl;
         scopes_table[(scopes_table.size()-1 < 0 ? 0 :scopes_table.size()-1)].insertVar(f);
-        cout << scopes_table[0].local_table.size() << endl;
+
 
 
         openScope(FUNCTION, f);//no need to open scope in parser
@@ -218,6 +263,10 @@ bool Enum_class::contains(string val){
 
             insertVar(f->params[i]);
         }
+
+
+      //  cout << "stack after inserting fun" << endl;
+        //p_stack(scopes_table[(scopes_table.size()-1 < 0 ? 0 :scopes_table.size()-1)].local_table);
 
         
 	}
