@@ -146,7 +146,7 @@ Variable* Scope::getVar(string gname){
         while(!local_table.empty()){
             if(local_table.top()->name == gname){
                 foundVar = local_table.top();
-               // cout << "found" << local_table.top()->name  << " =? " << gname<< endl;
+
                 break;
             }
             curVar = local_table.top();
@@ -155,8 +155,6 @@ Variable* Scope::getVar(string gname){
             cpy_stack.push(curVar);
         }
 
-   // cout << "cpy stack is : " << endl;
-    //p_stack(local_table);
 
          while (!cpy_stack.empty()){
             curVar = cpy_stack.top();
@@ -200,9 +198,11 @@ bool Enum_class::contains(string val){
 
   Variable* Symbol_Table::getVar(string name){
 
-        stack<Scope> cpy_stack = stack<Scope>();
-        
-        for(int i = scopes_table.size()-1; i >=0; i--){
+        //stack<Scope> cpy_stack = stack<Scope>();
+        //cout << "size is ======" << scopes_table.size()<<endl;
+      //cout << "top is " << scopes_table[scopes_table.size()-1 < 0 ? 0 : scopes_table.size()-1].local_table.top()->name<<endl;
+        for(int i = (scopes_table.size()-1 < 0 ? 0 : scopes_table.size()-1); i >=0; i--){
+
 
             auto cur = scopes_table[i].getVar(name);
             if(cur != nullptr)

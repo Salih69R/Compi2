@@ -2,6 +2,7 @@
 	#include <stdio.h>
 	#include <iostream>
 	#include "structs.hpp"
+	#include "hw3_output.hpp"
 	
 
 	
@@ -10,11 +11,14 @@
 	extern int yylineno;
 	
 	using namespace std;
+	using namespace output;
 	
 	Symbol_Table symbolTable = Symbol_Table();
 	Function* curFunc;
 	Enum_class* curEnumClass;
 	stack<vector<Node*>> ParamListStack = stack<vector<Node*>>();
+	
+	void end_f_scope();
 	
 
 %}
@@ -84,15 +88,14 @@ Enums :			/*epsilon*/
 
 EnumDecl :		ENUM ID {
 							Node* var = symbolTable.getVar("enum " + $2->name );
-							if (! (var == nullptr || var->type != ENUM_CLASS_t)){
-							
+							if ( (var != nullptr && var->type == ENUM_CLASS_t)){
 							errorDef(yylineno,"enum " + $2->name);
 							delete $2;
-							
 							exit(0);
 							}
-							delete $2;
+							
 							curEnumClass = new Enum_class("enum " + $2->name);
+							delete $2;
 							
 						} LBRACE EnumeratorList RBRACE SC 					
 						{symbolTable.insertVar(curEnumClass);};
@@ -200,6 +203,8 @@ Statement :		LBRACE {
 						{}
 				| Type ID ASSIGN Exp SC 											
 						{
+							
+							
 							Variable* var = symbolTable.getVar($2->name);
 							if(var != nullptr){
 								errorDef(yylineno, $2->name);
@@ -226,31 +231,32 @@ Statement :		LBRACE {
 							
 							
 						}
-				| EnumType ID {Variable* var = symbolTable.getVar($2->name);
+				| EnumType ID {
+								Variable* var = symbolTable.getVar($2->name);
 								if(var != nullptr){
 								errorDef(yylineno, $2->name);
 								delete $2;
-								delete $1;
+							
 								exit(0);
 								}
-								}
+							}
 				ASSIGN Exp { 
 								auto tmp = (Enum_class*)$1;
 								if (! tmp->contains($4->name) ){
 											errorUndefEnumValue(yylineno,$4->name);
 											delete $2;
-											delete $1;
-											delete $4;
+											
 											exit(0);		
 								
 								}
 							}
-				SC{Enum_var* new_var = new Enum_var(ENUM_t,$2->name,0,$4->name,$1->name);
+				SC{
+								Enum_var* new_var = new Enum_var(ENUM_t,$2->name,0,$4->value,$1->name);
 										symbolTable.insertVar(new_var);
-										delete $1;
+										
 										delete $2;
-										delete $4;
-				}
+										
+				}	
 				| ID ASSIGN Exp SC 													
 						{
 							Variable* var = symbolTable.getVar($1->name);
@@ -323,15 +329,6 @@ Statement :		LBRACE {
 							}
 						};
 checkBoolExp :     Exp {
-
-						string name = $1->name;
-						$1 = symbolTable.getVar($1->name);
-						
-						if($1 == nullptr)
-						{
-							errorUndef(yylineno , name);
-							exit(0);
-						}						
 				
 						if($1->type != BOOL_t)
 						{
@@ -455,9 +452,7 @@ Exp :			LPAREN Exp RPAREN
 								delete $1;
 								exit(0);
 							}
-							
-							
-							
+		
 							
 						$$ = var;
 					}
@@ -505,7 +500,7 @@ Exp :			LPAREN Exp RPAREN
 									delete $2;
 									exit(0);
 							}
-							//check about the names , if all of the are "" and we created empty var , or var with name identifed such as numm,
+							
 							$$ = new Node(BOOL_t);
 							
 						}
@@ -563,11 +558,15 @@ Exp :			LPAREN Exp RPAREN
 							
 						}
 
-				| LPAREN Type { if ( $2->type != INT_t){
+				| LPAREN Type {
+								if ( $2->type != INT_t){
 								delete $2;
 								errorMismatch(yylineno);
 								exit(0);
-								} } RPAREN Exp 											
+								} 
+							}
+
+							RPAREN Exp 											
 						{
 							Node* enum_var = symbolTable.getVar($4->name);
 							if (enum_var == nullptr){
@@ -587,8 +586,6 @@ Exp :			LPAREN Exp RPAREN
 							auto enum_var_casted = (Enum_var*)enum_var; 
 							Variable* new_int = new Variable(INT_t,enum_var_casted->name,enum_var_casted->offset,enum_var_casted->value);
 							delete $2;
-							delete $4;
-							delete enum_var;
 							$$ = new_int;
 						};
 
@@ -633,6 +630,40 @@ int main()
 void yyerror(char const* error){
 	errorSyn(yylineno);
 	exit(0);
+}
+
+void end_f_scope(stack<Variable*> st){
+	
+	end_scope();
+	
+	stack<Variable*> cpy = stack<Variable*>();
+    Variable* tmp;
+    while(!st.empty()){
+        tmp = st.top();
+        st.pop();
+        cpy.push(tmp);
+    }
+
+	/*now we have the reversed stack*/
+	
+    while(!cpy.empty()){
+	
+		Variable* var = cpy.top()->type;
+		switch (var->type){
+			case INT_t : printID(var->name, var->offset, "INT"); break;
+            case BOOL_t : printID(var->name, var->offset, "BOOL")); break;
+            case BYTE_t : printID(var->name, var->offset, "BYTE"); break;
+			case FUNCTION_t :cout << "later" << endl;
+
+			break;
+          
+           
+        }
+    }
+	
+	
+
+
 }
 
 
